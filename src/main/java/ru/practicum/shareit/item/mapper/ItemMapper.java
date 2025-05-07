@@ -13,8 +13,19 @@ public class ItemMapper {
         itemDto.setName(item.getName());
         itemDto.setDescription(item.getDescription());
         itemDto.setAvailable(item.isAvailable());
-        itemDto.setRequest(itemDto.getRequest());
+        itemDto.setOwner(item.getOwner());
+        itemDto.setRequest(item.getRequest());
         return itemDto;
     }
 
+    public static Item mapToItem(ItemDto itemDto) {
+        Item item = new Item();
+        item.setId(itemDto.getId());
+        item.setName(itemDto.getName());
+        item.setDescription(itemDto.getDescription());
+        item.setAvailable(itemDto.getAvailable());
+        item.setOwner(itemDto.getOwner());
+        item.setRequest(itemDto.getRequest());
+        return item;
+    }
 }

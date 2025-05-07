@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking;
 
+import ch.qos.logback.core.status.Status;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -13,6 +14,4 @@ public class Booking {
     private long item;
     private long booker;
     private Status status;
-
-
 }
