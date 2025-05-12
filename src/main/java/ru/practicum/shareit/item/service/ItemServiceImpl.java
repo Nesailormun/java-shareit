@@ -1,43 +1,61 @@
 package ru.practicum.shareit.item.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
-
-    public ItemServiceImpl(ItemRepository itemRepository) {
-        this.itemRepository = itemRepository;
-    }
+    private final UserRepository userRepository;
 
     @Override
     public ItemDto addNewItem(long userId, ItemDto itemDto) {
-        return itemRepository.create(userId, itemDto);
+        userRepository.findByUserId(userId);
+        itemDto.setOwner(userId);
+        Item item = ItemMapper.mapToItem(itemDto);
+        Item createdItem = itemRepository.create(userId, item);
+        return ItemMapper.mapToItemDto(createdItem);
     }
 
     @Override
     public ItemDto updateItem(long userId, long itemId, ItemDto itemDto) {
-        return itemRepository.update(userId, itemId, itemDto);
+        Item item = new Item();
+        item.setName(itemDto.getName());
+        item.setDescription(itemDto.getDescription());
+        item.setAvailable(itemDto.getAvailable());
+
+        Item updatedItem = itemRepository.update(userId, itemId, item);
+        return ItemMapper.mapToItemDto(updatedItem);
     }
 
     @Override
     public ItemDto getItemById(long userId, long itemId) {
-        return itemRepository.findById(userId, itemId);
+        Item item = itemRepository.findById(userId, itemId);
+        return ItemMapper.mapToItemDto(item);
     }
 
     @Override
     public List<ItemDto> getUsersItems(long userId) {
-        return itemRepository.findUsersItems(userId);
+        return itemRepository.findUsersItems(userId).stream()
+                .map(ItemMapper::mapToItemDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<ItemDto> getItemsByText(long userId, String text) {
-        return itemRepository.findByText(userId, text);
+        return itemRepository.findByText(userId, text).stream()
+                .map(ItemMapper::mapToItemDto)
+                .collect(Collectors.toList());
     }
 
     @Override

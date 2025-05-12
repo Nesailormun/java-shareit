@@ -1,14 +1,14 @@
 package ru.practicum.shareit.user.repository;
 
-import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.model.User;
 
 public interface UserRepository {
 
-    UserDto create(UserDto userDto);
+    User create(User user);
 
-    UserDto update(long userId, UserDto userDto);
+    User update(long userId, User user);
 
-    UserDto findByUserId(long userId);
+    User findByUserId(long userId);
 
     void deleteByUserId(long userId);
 }

@@ -3,10 +3,8 @@ package ru.practicum.shareit.user.repository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exceptions.NotFoundException;
-import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.exception.EmailValidationException;
-import ru.practicum.shareit.user.mapper.UserMapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,45 +16,46 @@ public class UserRepositoryImpl implements UserRepository {
     private final Map<Long, User> userStorage = new HashMap<>();
 
     @Override
-    public UserDto create(UserDto userDto) {
+    public User create(User user) {
         log.info("Обработка запроса на добавление нового пользователя.");
-        checkEmail(userDto);
-        userDto.setId(getNextId());
-        userStorage.put(userDto.getId(), UserMapper.mapToUser(userDto));
-        log.info("Пользователь с email = {} успешно создан.", userDto.getEmail());
-        return userDto;
+        checkEmail(user);
+        user.setId(getNextId());
+        userStorage.put(user.getId(), user);
+        log.info("Пользователь с email = {} успешно создан.", user.getEmail());
+        return user;
     }
 
     @Override
-    public UserDto update(long userId, UserDto userDto) {
+    public User update(long userId, User user) {
         log.info("Обработка запроса на обновление данных пользователя.");
         if (!userStorage.containsKey(userId)) {
             log.error("Ошибка обновления пользователя, пользователь с id = {} не найден.", userId);
             throw new NotFoundException("User с id = " + userId + " не найден.");
         }
-        checkEmail(userDto);
+        checkEmail(user);
         User updatedUser = userStorage.get(userId);
-        if (userDto.getEmail() != null) {
-            updatedUser.setEmail(userDto.getEmail());
-            log.debug("Изменено значение поля email на: {}.", userDto.getEmail());
+        if (user.getEmail() != null && !user.getEmail().equals(updatedUser.getEmail())) {
+            updatedUser.setEmail(user.getEmail());
+            log.debug("Изменено значение поля email на: {}.", user.getEmail());
         }
-        if (userDto.getName() != null) {
-            updatedUser.setName(userDto.getName());
-            log.debug("Изменено значение поля name на: {}.", userDto.getName());
+        if (user.getName() != null) {
+            updatedUser.setName(user.getName());
+            log.debug("Изменено значение поля name на: {}.", user.getName());
         }
+
         userStorage.put(userId, updatedUser);
-        log.info("Данные пользователя с email = {} успешно обновлены.", updatedUser.getEmail());
-        return UserMapper.mapToUserDto(updatedUser);
+        log.info("Данные пользователя с id = {} успешно обновлены.", userId);
+        return updatedUser;
     }
 
     @Override
-    public UserDto findByUserId(long userId) {
+    public User findByUserId(long userId) {
         log.info("Обработка запроса на получение данных пользователя.");
         if (!userStorage.containsKey(userId)) {
             log.error("Ошибка получения пользователя, пользователь с id = {} не найден.", userId);
             throw new NotFoundException("User с id = " + userId + " не найден.");
         }
-        return UserMapper.mapToUserDto(userStorage.get(userId));
+        return userStorage.get(userId);
     }
 
     @Override
@@ -75,13 +74,15 @@ public class UserRepositoryImpl implements UserRepository {
         return ++currentMaxId;
     }
 
-    private void checkEmail(UserDto userDto) {
+    private void checkEmail(User user) {
         userStorage.values().stream()
-                .filter(u -> u.getEmail().equals(userDto.getEmail()))
+                .filter(u -> u.getEmail().equals(user.getEmail()))
                 .findFirst()
                 .ifPresent(u -> {
-                    throw new EmailValidationException("User c email = " + u.getEmail() + " уже существует.");
+                    if (u.getId() == user.getId()) {
+                        return;
+                    }
+                    throw new EmailValidationException("User c email = " + user.getEmail() + " уже существует.");
                 });
     }
-
 }
