@@ -17,7 +17,6 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User create(User user) {
-        log.info("Обработка запроса на добавление нового пользователя.");
         checkEmail(user);
         user.setId(getNextId());
         userStorage.put(user.getId(), user);
@@ -27,11 +26,6 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User update(long userId, User user) {
-        log.info("Обработка запроса на обновление данных пользователя.");
-        if (!userStorage.containsKey(userId)) {
-            log.error("Ошибка обновления пользователя, пользователь с id = {} не найден.", userId);
-            throw new NotFoundException("User с id = " + userId + " не найден.");
-        }
         checkEmail(user);
         User updatedUser = userStorage.get(userId);
         if (user.getEmail() != null && !user.getEmail().equals(updatedUser.getEmail())) {
@@ -42,7 +36,6 @@ public class UserRepositoryImpl implements UserRepository {
             updatedUser.setName(user.getName());
             log.debug("Изменено значение поля name на: {}.", user.getName());
         }
-
         userStorage.put(userId, updatedUser);
         log.info("Данные пользователя с id = {} успешно обновлены.", userId);
         return updatedUser;
@@ -50,7 +43,6 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User findByUserId(long userId) {
-        log.info("Обработка запроса на получение данных пользователя.");
         if (!userStorage.containsKey(userId)) {
             log.error("Ошибка получения пользователя, пользователь с id = {} не найден.", userId);
             throw new NotFoundException("User с id = " + userId + " не найден.");
@@ -60,7 +52,6 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public void deleteByUserId(long userId) {
-        log.info("Обработка запроса на удаление пользователя с id = {}.", userId);
         userStorage.remove(userId);
         log.info("Пользователь с id = {} удален.", userId);
     }

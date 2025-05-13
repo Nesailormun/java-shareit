@@ -17,7 +17,6 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     @Override
     public Item create(long userId, Item item) {
-        log.info("Обработка запроса на добавление нового предмета.");
         item.setId(getNextId());
         itemStorage.put(item.getId(), item);
         return item;
@@ -25,15 +24,7 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     @Override
     public Item update(long userId, long itemId, Item item) {
-        log.info("Запрос на обновление данных вещи с id = {} пользователем с id = {}.", itemId, userId);
-        if (!itemStorage.containsKey(itemId)) {
-            log.error("Ошибка обновления. Вещь с id = {} не найдена.", itemId);
-            throw new NotFoundException("Вещь с id = " + itemId + " не найдена.");
-        }
-
-        checkItemOwner(userId, itemId);
         Item updatedItem = itemStorage.get(itemId);
-
         if (item.getName() != null) {
             updatedItem.setName(item.getName());
             log.debug("Название обновлено на {}.", item.getName());
@@ -46,15 +37,13 @@ public class ItemRepositoryImpl implements ItemRepository {
             updatedItem.setAvailable(item.getAvailable());
             log.debug("Доступность обновлена на {}.", item.getAvailable());
         }
-
         itemStorage.put(itemId, updatedItem);
         log.info("Вещь с id = {} успешно обновлена", itemId);
         return updatedItem;
     }
 
     @Override
-    public Item findById(long userId, long itemId) {
-        log.info("Запрос на получение вещи с id = {} пользователем с id = {}", itemId, userId);
+    public Item findById(long itemId) {
         Item item = itemStorage.get(itemId);
         if (item == null) {
             log.error("Вещь с id = {} не найдена", itemId);
@@ -65,7 +54,6 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     @Override
     public List<Item> findUsersItems(long userId) {
-        log.info("Запрос на получение всех вещей пользователя с id = {}", userId);
         return itemStorage.values()
                 .stream()
                 .filter(item -> item.getOwner() == userId)
@@ -73,13 +61,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public List<Item> findByText(long userId, String text) {
-        log.info("Запрос на получение доступных вещей по тексту = '{}'", text);
-        if (text == null || text.isBlank()) {
-            log.warn("Поисковый текст пуст.");
-            return List.of();
-        }
-
+    public List<Item> findByText(String text) {
         String lowerCaseText = text.toLowerCase();
         return itemStorage.values()
                 .stream()
@@ -91,8 +73,6 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     @Override
     public void deleteByItemId(long userId, long itemId) {
-        log.info("Запрос на удаление вещи с id = {} пользователем с id = {}", itemId, userId);
-        checkItemOwner(userId, itemId);
         itemStorage.remove(itemId);
         log.info("Вещь с id = {} удалена", itemId);
     }
@@ -104,12 +84,5 @@ public class ItemRepositoryImpl implements ItemRepository {
                 .max()
                 .orElse(0);
         return ++currentMaxId;
-    }
-
-    private void checkItemOwner(long userId, long itemId) {
-        if (itemStorage.get(itemId).getOwner() != userId) {
-            log.warn("Пользователь с id = {} не является владельцем вещи с id = {}.", userId, itemId);
-            throw new NotFoundException("Вы не являетесь владельцем этой вещи.");
-        }
     }
 }

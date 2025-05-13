@@ -10,11 +10,11 @@ public interface ItemRepository {
 
     Item update(long userId, long itemId, Item item);
 
-    Item findById(long userId, long itemId);
+    Item findById(long itemId);
 
     List<Item> findUsersItems(long userId);
 
-    List<Item> findByText(long userId, String text);
+    List<Item> findByText(String text);
 
     void deleteByItemId(long userId, long itemId);
 }
