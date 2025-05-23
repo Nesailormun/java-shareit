@@ -35,8 +35,8 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto updateItem(long userId, long itemId, ItemDto itemDto) {
         log.info("Запрос на обновление данных вещи с id = {} пользователем с id = {}.", itemId, userId);
-        itemRepository.findById(itemId);
-        checkItemOwner(userId, itemId);
+        Item itemToCheck = itemRepository.findById(itemId);
+        checkItemOwner(userId, itemToCheck);
         Item item = ItemMapper.mapToItem(itemDto);
         Item updatedItem = itemRepository.update(userId, itemId, item);
         return ItemMapper.mapToItemDto(updatedItem);
@@ -72,13 +72,14 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public void deleteItem(long userId, long itemId) {
         log.info("Запрос на удаление вещи с id = {} пользователем с id = {}", itemId, userId);
-        checkItemOwner(userId, itemId);
+        Item item = itemRepository.findById(itemId);
+        checkItemOwner(userId, item);
         itemRepository.deleteByItemId(userId, itemId);
     }
 
-    private void checkItemOwner(long userId, long itemId) {
-        if (itemRepository.findById(itemId).getOwner() != userId) {
-            log.warn("Пользователь с id = {} не является владельцем вещи с id = {}.", userId, itemId);
+    private void checkItemOwner(long userId, Item itemToCheck) {
+        if (itemToCheck.getOwner() != userId) {
+            log.warn("Пользователь с id = {} не является владельцем вещи с id = {}.", userId, itemToCheck.getId());
             throw new NotItemOwnerException("Вы не являетесь владельцем этой вещи.");
         }
     }
