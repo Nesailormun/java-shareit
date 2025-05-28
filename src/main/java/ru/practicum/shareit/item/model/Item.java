@@ -2,13 +2,16 @@ package ru.practicum.shareit.item.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.model.User;
-import java.util.List;
 
 @Entity
 @Table(name = "items", schema = "public")
 @Data
+@ToString(exclude = {"owner", "request"})
+@EqualsAndHashCode(exclude = {"owner", "request"})
 public class Item {
 
     @Id
@@ -31,6 +34,4 @@ public class Item {
     @JoinColumn(name = "request_id")
     private ItemRequest request;
 
-    @OneToMany(mappedBy = "item")
-    private List<Comment> comments;
 }

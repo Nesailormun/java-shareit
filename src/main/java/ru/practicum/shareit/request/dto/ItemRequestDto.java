@@ -7,9 +7,8 @@ import java.sql.Timestamp;
 @Data
 public class ItemRequestDto {
 
-    private long id;
+    private Long id;
     private String description;
-    private long requestor;
-    private Timestamp created;
+    private Long requester;
 
 }

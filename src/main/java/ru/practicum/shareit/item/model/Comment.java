@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Table(name = "comments", schema = "public")
 @Data
 public class Comment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,8 +26,4 @@ public class Comment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
-
-    @Column(nullable = false)
-    private LocalDateTime created;
-
 }

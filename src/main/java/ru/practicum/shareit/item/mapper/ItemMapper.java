@@ -3,6 +3,8 @@ package ru.practicum.shareit.item.mapper;
 import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.user.model.User;
 
 @UtilityClass
 public class ItemMapper {
@@ -13,19 +15,30 @@ public class ItemMapper {
         itemDto.setName(item.getName());
         itemDto.setDescription(item.getDescription());
         itemDto.setAvailable(item.getAvailable());
-        itemDto.setOwner(item.getOwner());
-        itemDto.setRequest(item.getRequest());
+        itemDto.setOwnerId(item.getOwner().getId());
+        itemDto.setRequestId(item.getRequest() != null ? item.getRequest().getId() : null);
         return itemDto;
     }
 
-    public static Item mapToItem(ItemDto itemDto) {
+    public static Item mapToItem(ItemDto dto, User owner, ItemRequest request) {
         Item item = new Item();
-        item.setId(itemDto.getId());
-        item.setName(itemDto.getName());
-        item.setDescription(itemDto.getDescription());
-        item.setAvailable(itemDto.getAvailable());
-        item.setOwner(itemDto.getOwner());
-        item.setRequest(itemDto.getRequest());
+        item.setId(dto.getId());
+        item.setName(dto.getName());
+        item.setDescription(dto.getDescription());
+        item.setAvailable(dto.getAvailable());
+        item.setOwner(owner);
+        item.setRequest(request);
+        return item;
+    }
+
+    public static Item mapToNewItem(ItemDto dto, User owner, ItemRequest request) {
+        Item item = new Item();
+        item.setName(dto.getName());
+        item.setDescription(dto.getDescription());
+        item.setAvailable(dto.getAvailable());
+        item.setOwner(owner);
+        item.setRequest(request);
         return item;
     }
 }
+

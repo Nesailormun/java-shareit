@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class UserDto {
 
-    private long id;
+    private Long id;
     @NotNull
     private String name;
     @NotNull(message = "Необходимо указать email.")
