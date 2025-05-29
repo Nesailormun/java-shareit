@@ -3,7 +3,9 @@ package ru.practicum.shareit.item;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
@@ -20,7 +22,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getUsersItems(@RequestHeader("X-Sharer-User-Id") long userId) {
+    public List<ItemWithBookingsDto> getUsersItems(@RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("/items/ GET выполнение запроса. userId={}", userId);
         return itemService.getUsersItems(userId);
     }
@@ -54,4 +56,15 @@ public class ItemController {
         log.info("/items/{itemId} DELETE выполнение запроса. userId={}; itemId = {}", userId, itemId);
         itemService.deleteItem(userId, itemId);
     }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addComment(
+            @RequestHeader("X-Sharer-User-Id") long userId,
+            @PathVariable long itemId,
+            @RequestBody @Valid CommentDto commentDto) {
+        log.info("/items/{itemId}/comment POST выполнение запроса от userId = {}", userId);
+        return itemService.addComment(userId, itemId, commentDto);
+    }
+
+
 }

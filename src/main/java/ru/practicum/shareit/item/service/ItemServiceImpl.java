@@ -4,17 +4,27 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exceptions.NotFoundException;
-import ru.practicum.shareit.item.exception.NotItemOwnerException;
+import ru.practicum.shareit.exceptions.NotItemOwnerException;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
+import ru.practicum.shareit.item.exception.CommentBeforeBookingEndException;
 import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.mapper.CommentMapper;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -26,6 +36,8 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final ItemRequestRepository itemRequestRepository;
+    private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
     @Override
     @Transactional
@@ -76,12 +88,25 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getUsersItems(long userId) {
+    public List<ItemWithBookingsDto> getUsersItems(long userId) {
         log.info("Запрос на получение всех вещей пользователя с id = {}", userId);
-        return itemRepository.findByOwnerId(userId).stream()
-                .map(ItemMapper::mapToItemDto)
+        List<Item> items = itemRepository.findByOwnerId(userId);
+
+        return items.stream()
+                .map(item -> {
+                    Booking last = bookingRepository
+                            .findFirstByItemIdAndStartBeforeAndStatusOrderByEndDesc(
+                                    item.getId(), LocalDateTime.now(), BookingStatus.APPROVED);
+
+                    Booking next = bookingRepository
+                            .findFirstByItemIdAndStartAfterAndStatusOrderByStartAsc(
+                                    item.getId(), LocalDateTime.now(), BookingStatus.APPROVED);
+
+                    return ItemMapper.mapToItemWithBookingsDto(item, last, next);
+                })
                 .toList();
     }
+
 
     @Override
     public List<ItemDto> getItemsByText(long userId, String text) {
@@ -104,6 +129,25 @@ public class ItemServiceImpl implements ItemService {
         checkItemOwner(userId, item);
         itemRepository.delete(item);
         log.info("Вещь с id = {} успешно удалена.", itemId);
+    }
+
+    @Override
+    @Transactional
+    public CommentDto addComment(long userId, long itemId, CommentDto commentDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
+
+        boolean hasPastBooking = bookingRepository.existsByItem_idAndBooker_idAndEndBeforeAndStatus(
+                itemId, userId, LocalDateTime.now(), BookingStatus.APPROVED);
+
+        if (!hasPastBooking) {
+            throw new CommentBeforeBookingEndException("Оставить отзыв можно только после аренды");
+        }
+
+        Comment comment = CommentMapper.mapToComment(commentDto, item, user);
+        return CommentMapper.mapToCommentDto(commentRepository.save(comment));
     }
 
     private void checkItemOwner(long userId, Item itemToCheck) {

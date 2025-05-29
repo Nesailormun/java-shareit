@@ -1,11 +1,13 @@
 package ru.practicum.shareit.user.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "users", schema = "public")
-@Data
+@Getter
+@Setter
 public class User {
 
     @Id

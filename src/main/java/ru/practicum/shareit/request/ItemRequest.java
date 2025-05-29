@@ -1,11 +1,12 @@
 package ru.practicum.shareit.request;
 
-import lombok.Data;
-
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import ru.practicum.shareit.user.model.User;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "requests", schema = "public")
 public class ItemRequest {

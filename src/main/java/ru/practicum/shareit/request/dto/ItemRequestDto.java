@@ -1,10 +1,10 @@
 package ru.practicum.shareit.request.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.sql.Timestamp;
-
-@Data
+@Getter
+@Setter
 public class ItemRequestDto {
 
     private Long id;
