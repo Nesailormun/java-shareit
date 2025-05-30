@@ -42,8 +42,11 @@ public class BookingServiceImpl implements BookingService {
         Item item = itemRepository.findById(bookingDto.getItemId())
                 .orElseThrow(() -> new NotFoundException("Вещь с id=" + bookingDto.getItemId() + " не найдена"));
 
+        if (bookingDto.getEnd().equals(bookingDto.getStart())) {
+            throw new IllegalArgumentException("Время начала и конца бронирования не должны быть равны.");
+        }
         if (!item.getAvailable()) {
-            throw new IllegalArgumentException("Вещь с id=" + item.getId() + " недоступна для бронирования.");
+            throw new IllegalArgumentException("Вещь с id =" + item.getId() + " недоступна для бронирования.");
         }
 
         Booking booking = BookingMapper.mapToNewBooking(bookingDto, item, booker);
@@ -74,7 +77,7 @@ public class BookingServiceImpl implements BookingService {
 
         if (booking.getBooker().getId() != userId &&
                 booking.getItem().getOwner().getId() != userId) {
-            throw new NotItemOwnerException("Нет доступа к информации о бронировании");
+            throw new NotItemOwnerException("Нет доступа к информации о бронировании.");
         }
 
         return BookingMapper.mapToDto(booking);
@@ -109,11 +112,14 @@ public class BookingServiceImpl implements BookingService {
         LocalDateTime now = LocalDateTime.now();
 
         List<Booking> bookingList = switch (RequestState.from(state)) {
-            case CURRENT -> bookingRepository.findByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(ownerId, now, now);
+            case CURRENT ->
+                    bookingRepository.findByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(ownerId, now, now);
             case PAST -> bookingRepository.findByItemOwnerIdAndEndBeforeOrderByStartDesc(ownerId, now);
             case FUTURE -> bookingRepository.findByItemOwnerIdAndStartAfterOrderByStartDesc(ownerId, now);
-            case WAITING -> bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(ownerId, BookingStatus.WAITING);
-            case REJECTED -> bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(ownerId, BookingStatus.REJECTED);
+            case WAITING ->
+                    bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(ownerId, BookingStatus.WAITING);
+            case REJECTED ->
+                    bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(ownerId, BookingStatus.REJECTED);
             default -> bookingRepository.findByItemOwnerIdOrderByStartDesc(ownerId);
         };
 

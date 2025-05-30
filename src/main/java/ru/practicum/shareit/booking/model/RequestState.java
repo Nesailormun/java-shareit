@@ -12,7 +12,7 @@ public enum RequestState {
         try {
             return RequestState.valueOf(state.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Unknown state: " + state);
+            throw new IllegalArgumentException("Неизвестное значение запроса state: " + state);
         }
     }
 }

@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -12,14 +13,11 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/items")
 public class ItemController {
 
     private final ItemService itemService;
-
-    public ItemController(ItemService itemService) {
-        this.itemService = itemService;
-    }
 
     @GetMapping
     public List<ItemWithBookingsDto> getUsersItems(@RequestHeader("X-Sharer-User-Id") long userId) {
@@ -28,7 +26,7 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    ItemDto getItemById(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable long itemId) {
+    ItemWithBookingsDto getItemById(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable long itemId) {
         log.info("/items/{itemId} GET выполнение запроса. userId={}; itemId = {}", userId, itemId);
         return itemService.getItemById(userId, itemId);
     }

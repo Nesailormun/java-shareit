@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.dto.BookingShortDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -80,11 +81,37 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto getItemById(long userId, long itemId) {
+    public ItemWithBookingsDto getItemById(long userId, long itemId) {
         log.info("Запрос на получение вещи с id = {} пользователем с id = {}", itemId, userId);
+
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь с id = " + itemId + " не найдена."));
-        return ItemMapper.mapToItemDto(item);
+
+        ItemWithBookingsDto itemWithBookingsDto = ItemMapper.mapToItemWithBookingsDto(item, null, null);
+
+        List<CommentDto> comments = commentRepository.findByItemId(itemId).stream()
+                .map(CommentMapper::mapToCommentDto)
+                .toList();
+        itemWithBookingsDto.setComments(comments);
+
+        if (item.getOwner().getId().equals(userId)) {
+            LocalDateTime now = LocalDateTime.now();
+
+            Booking last = bookingRepository.findFirstByItemIdAndStartBeforeAndStatusOrderByEndDesc(
+                    itemId, now, BookingStatus.APPROVED);
+
+            Booking next = bookingRepository.findFirstByItemIdAndStartAfterAndStatusOrderByStartAsc(
+                    itemId, now, BookingStatus.APPROVED);
+
+            if (last != null) {
+                itemWithBookingsDto.setLastBooking(new BookingShortDto(last.getId(), last.getBooker().getId()));
+            }
+            if (next != null) {
+                itemWithBookingsDto.setNextBooking(new BookingShortDto(next.getId(), next.getBooker().getId()));
+            }
+        }
+
+        return itemWithBookingsDto;
     }
 
     @Override
@@ -112,7 +139,7 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDto> getItemsByText(long userId, String text) {
         log.info("Запрос на поиск доступных вещей по тексту = '{}'", text);
         if (text == null || text.isBlank()) {
-            log.warn("Поисковый текст пуст, возвращаем пустой список.");
+            log.warn("Поисковый текст пуст.");
             return List.of();
         }
         return itemRepository.findByText(text).stream()
