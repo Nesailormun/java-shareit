@@ -12,6 +12,8 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import ru.practicum.shareit.user.exception.EmailValidationException;
 
+import java.util.Objects;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -45,7 +47,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDto updateUser(Long userId, UserDto userDto) {
         User user = UserMapper.mapToUser(getUserById(userId));
-        if (userDto.getEmail() != null && userDto.getId() != user.getId()) {
+        if (userDto.getEmail() != null && !Objects.equals(userDto.getId(), user.getId())) {
             checkEmail(userDto);
             user.setEmail(userDto.getEmail());
             log.debug("Изменено значение поля email на: {}.", user.getEmail());
