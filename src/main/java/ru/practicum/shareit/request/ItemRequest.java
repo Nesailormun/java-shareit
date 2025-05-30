@@ -1,15 +1,24 @@
 package ru.practicum.shareit.request;
 
-import lombok.Data;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import ru.practicum.shareit.user.model.User;
 
-import java.sql.Timestamp;
-
-@Data
+@Getter
+@Setter
+@Entity
+@Table(name = "requests", schema = "public")
 public class ItemRequest {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private long id;
+    @Column(nullable = false)
     private String description;
-    private long requestor;
-    private Timestamp created;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "requester_id", nullable = false)
+    private User requester;
 
 }

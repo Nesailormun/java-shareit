@@ -1,32 +1,32 @@
 package ru.practicum.shareit.item;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/items")
 public class ItemController {
 
     private final ItemService itemService;
 
-    public ItemController(ItemService itemService) {
-        this.itemService = itemService;
-    }
-
     @GetMapping
-    public List<ItemDto> getUsersItems(@RequestHeader("X-Sharer-User-Id") long userId) {
+    public List<ItemWithBookingsDto> getUsersItems(@RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("/items/ GET выполнение запроса. userId={}", userId);
         return itemService.getUsersItems(userId);
     }
 
     @GetMapping("/{itemId}")
-    ItemDto getItemById(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable long itemId) {
+    ItemWithBookingsDto getItemById(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable long itemId) {
         log.info("/items/{itemId} GET выполнение запроса. userId={}; itemId = {}", userId, itemId);
         return itemService.getItemById(userId, itemId);
     }
@@ -54,4 +54,15 @@ public class ItemController {
         log.info("/items/{itemId} DELETE выполнение запроса. userId={}; itemId = {}", userId, itemId);
         itemService.deleteItem(userId, itemId);
     }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addComment(
+            @RequestHeader("X-Sharer-User-Id") long userId,
+            @PathVariable long itemId,
+            @RequestBody @Valid CommentDto commentDto) {
+        log.info("/items/{itemId}/comment POST выполнение запроса от userId = {}", userId);
+        return itemService.addComment(userId, itemId, commentDto);
+    }
+
+
 }
