@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 
@@ -8,6 +9,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
+
+    @Query("select b from Booking b where b.item.id in :itemIds and b.status = 'APPROVED' order by b.start asc")
+    List<Booking> findByItemIdsAndStatusIsApprovedOrderByStartTimeAsc(List<Long> itemIds);
 
     Booking findFirstByItemIdAndStartBeforeAndStatusOrderByEndDesc(
             Long itemId, LocalDateTime now, BookingStatus status);
