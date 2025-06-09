@@ -11,6 +11,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.UpdateItemDto;
 
 @Slf4j
 @Controller
@@ -60,7 +61,7 @@ public class ItemController {
     public ResponseEntity<Object> updateItem(
             @RequestHeader("X-Sharer-User-Id") long userId,
             @PathVariable Long itemId,
-            @RequestBody ItemDto itemDto) {
+            @RequestBody @Valid UpdateItemDto itemDto) {
         log.info("PATCH /items/{} userId={}, itemDto={}", itemId, userId, itemDto);
         return itemClient.updateItem(userId, itemId, itemDto);
     }

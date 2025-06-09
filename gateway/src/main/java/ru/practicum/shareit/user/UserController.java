@@ -1,13 +1,13 @@
 package ru.practicum.shareit.user;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.user.dto.UpdateUserDto;
 import ru.practicum.shareit.user.dto.UserDto;
 
 @Slf4j
@@ -26,20 +26,20 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<Object> getUserById(@PathVariable @Positive Long userId) {
+    public ResponseEntity<Object> getUserById(@PathVariable Long userId) {
         log.info("GET /users/{} getUserById", userId);
         return userClient.getUserById(userId);
     }
 
     @PatchMapping("/{userId}")
-    public ResponseEntity<Object> updateUser(@PathVariable @Positive Long userId,
-                                             @RequestBody UserDto userDto) {
+    public ResponseEntity<Object> updateUser(@PathVariable Long userId,
+                                             @RequestBody @Valid UpdateUserDto userDto) {
         log.info("PATCH /users/{} updateUser userDto={}", userId, userDto);
         return userClient.updateUser(userId, userDto);
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Object> deleteUser(@PathVariable @Positive Long userId) {
+    public ResponseEntity<Object> deleteUser(@PathVariable Long userId) {
         log.info("DELETE /users/{} deleteUser", userId);
         return userClient.deleteUser(userId);
     }

@@ -20,8 +20,6 @@ public class ItemRequestMapper {
     }
 
     public static ItemRequest toItemRequest(ItemRequestDto dto, User requester) {
-        if (dto == null) return null;
-
         ItemRequest itemRequest = new ItemRequest();
         itemRequest.setDescription(dto.getDescription());
         itemRequest.setRequester(requester);

@@ -38,7 +38,7 @@ public class ItemController {
     }
 
     @PostMapping
-    ItemDto createItem(@RequestHeader("X-Sharer-User-Id") long userId, @RequestBody @Valid ItemDto itemDto) {
+    ItemDto createItem(@RequestHeader("X-Sharer-User-Id") long userId, @RequestBody ItemDto itemDto) {
         log.info("/items POST выполнение запроса. userId={}; itemDto = {}", userId, itemDto.toString());
         return itemService.addNewItem(userId, itemDto);
     }
