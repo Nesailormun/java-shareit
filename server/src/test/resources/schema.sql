@@ -15,9 +15,9 @@ CREATE TABLE requests (
     description VARCHAR(512) NOT NULL,
     requester_id BIGINT,
     created TIMESTAMP NOT NULL,
-    CONSTRAINT fk_requester FOREIGN KEY (requester_id) 
-        REFERENCES users(id) 
-        ON UPDATE CASCADE 
+    CONSTRAINT fk_requester FOREIGN KEY (requester_id)
+        REFERENCES users(id)
+        ON UPDATE CASCADE
         ON DELETE CASCADE
 );
 
@@ -28,13 +28,13 @@ CREATE TABLE items (
     is_available BOOLEAN NOT NULL,
     owner_id BIGINT,
     request_id BIGINT,
-    CONSTRAINT fk_owner FOREIGN KEY (owner_id) 
-        REFERENCES users(id) 
-        ON UPDATE CASCADE 
+    CONSTRAINT fk_owner FOREIGN KEY (owner_id)
+        REFERENCES users(id)
+        ON UPDATE CASCADE
         ON DELETE CASCADE,
-    CONSTRAINT fk_request FOREIGN KEY (request_id) 
-        REFERENCES requests(id) 
-        ON UPDATE CASCADE 
+    CONSTRAINT fk_request FOREIGN KEY (request_id)
+        REFERENCES requests(id)
+        ON UPDATE CASCADE
         ON DELETE CASCADE
 );
 
@@ -45,28 +45,28 @@ CREATE TABLE bookings (
     item_id BIGINT,
     booker_id BIGINT,
     status VARCHAR(20) NOT NULL,
-    CONSTRAINT fk_booking_item FOREIGN KEY (item_id) 
-        REFERENCES items(id) 
-        ON UPDATE CASCADE 
+    CONSTRAINT fk_booking_item FOREIGN KEY (item_id)
+        REFERENCES items(id)
+        ON UPDATE CASCADE
         ON DELETE CASCADE,
-    CONSTRAINT fk_booker FOREIGN KEY (booker_id) 
-        REFERENCES users(id) 
-        ON UPDATE CASCADE 
+    CONSTRAINT fk_booker FOREIGN KEY (booker_id)
+        REFERENCES users(id)
+        ON UPDATE CASCADE
         ON DELETE CASCADE
 );
 
 CREATE TABLE comments (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    text CLOB NOT NULL,
+    text TEXT NOT NULL,
     item_id BIGINT,
     author_id BIGINT,
     created TIMESTAMP NOT NULL,
-    CONSTRAINT fk_comment_item FOREIGN KEY (item_id) 
-        REFERENCES items(id) 
-        ON UPDATE CASCADE 
+    CONSTRAINT fk_comment_item FOREIGN KEY (item_id)
+        REFERENCES items(id)
+        ON UPDATE CASCADE
         ON DELETE CASCADE,
-    CONSTRAINT fk_author FOREIGN KEY (author_id) 
-        REFERENCES users(id) 
-        ON UPDATE CASCADE 
+    CONSTRAINT fk_comment_author FOREIGN KEY (author_id)
+        REFERENCES users(id)
+        ON UPDATE CASCADE
         ON DELETE CASCADE
 );

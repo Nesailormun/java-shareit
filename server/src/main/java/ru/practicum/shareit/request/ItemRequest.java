@@ -1,7 +1,9 @@
 package ru.practicum.shareit.request;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.practicum.shareit.user.model.User;
 
@@ -11,6 +13,8 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Table(name = "requests", schema = "public")
+@AllArgsConstructor
+@NoArgsConstructor
 public class ItemRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

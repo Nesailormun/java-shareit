@@ -1,7 +1,9 @@
 package ru.practicum.shareit.item.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.model.User;
@@ -10,6 +12,8 @@ import ru.practicum.shareit.user.model.User;
 @Table(name = "items", schema = "public")
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Item {
 
     @Id
