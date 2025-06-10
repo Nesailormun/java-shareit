@@ -1,9 +1,8 @@
 package ru.practicum.shareit.item;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -14,151 +13,137 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
 import ru.practicum.shareit.item.service.ItemService;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = ItemController.class)
-
-public class ItemControllerTest {
+@WebMvcTest(ItemController.class)
+class ItemControllerTest {
 
     @Autowired
-    ObjectMapper mapper;
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockBean
-    ItemService itemService;
+    private ItemService itemService;
 
-    @Autowired
-    MockMvc mvc;
+    private final Long userId = 1L;
+    private final Long itemId = 2L;
 
-    final Long userId = 1L;
-    final Long itemId = 10L;
+    private final ItemDto itemDto = new ItemDto(
+            itemId, "Дрель", "Простая дрель", true, userId, null
+    );
 
-    final ItemDto itemDto = new ItemDto();
-    {
-        itemDto.setId(itemId);
-        itemDto.setName("Молоток");
-        itemDto.setDescription("Строительный молоток");
-        itemDto.setAvailable(true);
-        itemDto.setRequestId(5L);
-    }
+    private final CommentDto commentDto = new CommentDto(
+            1L, "Отличный инструмент!", "Иван", LocalDateTime.now()
+    );
 
-    final ItemWithBookingsDto itemWithBookingsDto = new ItemWithBookingsDto();
-    {
-        itemWithBookingsDto.setId(itemDto.getId());
-        itemWithBookingsDto.setName(itemDto.getName());
-        itemWithBookingsDto.setDescription(itemDto.getDescription());
-        itemWithBookingsDto.setAvailable(itemDto.getAvailable());
-        itemWithBookingsDto.setRequestId(itemDto.getRequestId());
-        itemWithBookingsDto.setComments(Collections.emptyList());
-    }
+    private final ItemWithBookingsDto itemWithBookingsDto = new ItemWithBookingsDto(
+            itemId, "Дрель", "Простая дрель", true, userId, null,
+            List.of(commentDto), null, null
+    );
 
-    final CommentDto commentDto = new CommentDto();
-    {
-        commentDto.setId(1L);
-        commentDto.setText("Очень полезный инструмент");
-        commentDto.setAuthorName("Иван");
-        commentDto.setCreated(LocalDateTime.of(2025, 6, 1, 12, 0));
-    }
+    private final ItemDto updatedItemDto = new ItemDto(
+            itemId, "Отбойный молоток", "Мощный инструмент для демонтажа", false, userId, null
+    );
 
     @Test
-    void getUsersItems() throws Exception {
-        when(itemService.getUsersItems(userId)).thenReturn(List.of(itemWithBookingsDto));
+    void getUsersItemsTest() throws Exception {
+        Mockito.when(itemService.getUsersItems(userId))
+                .thenReturn(List.of(itemWithBookingsDto));
 
-        mvc.perform(get("/items")
+        mockMvc.perform(get("/items")
                         .header("X-Sharer-User-Id", userId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id").value(itemWithBookingsDto.getId()))
-                .andExpect(jsonPath("$[0].name").value(itemWithBookingsDto.getName()));
+                .andExpect(jsonPath("$[0].id").value(itemId))
+                .andExpect(jsonPath("$[0].name").value("Дрель"))
+                .andExpect(jsonPath("$[0].comments[0].text").value("Отличный инструмент!"));
     }
 
     @Test
-    void getItemById() throws Exception {
-        when(itemService.getItemById(userId, itemId)).thenReturn(itemWithBookingsDto);
+    void getItemByIdTest() throws Exception {
+        Mockito.when(itemService.getItemById(userId, itemId))
+                .thenReturn(itemWithBookingsDto);
 
-        mvc.perform(get("/items/{itemId}", itemId)
+        mockMvc.perform(get("/items/{itemId}", itemId)
                         .header("X-Sharer-User-Id", userId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(itemWithBookingsDto.getId()))
-                .andExpect(jsonPath("$.name").value(itemWithBookingsDto.getName()));
+                .andExpect(jsonPath("$.id").value(itemId))
+                .andExpect(jsonPath("$.name").value("Дрель"))
+                .andExpect(jsonPath("$.comments[0].authorName").value("Иван"));
     }
 
     @Test
-    void getItemsByText() throws Exception {
-        when(itemService.getItemsByText(userId, "молоток")).thenReturn(List.of(itemDto));
+    void getItemsByTextTest() throws Exception {
+        String text = "дрель";
 
-        mvc.perform(get("/items/search")
+        Mockito.when(itemService.getItemsByText(userId, text))
+                .thenReturn(List.of(itemDto));
+
+        mockMvc.perform(get("/items/search")
                         .header("X-Sharer-User-Id", userId)
-                        .param("text", "молоток"))
+                        .param("text", text))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id").value(itemDto.getId()))
-                .andExpect(jsonPath("$[0].name").value(itemDto.getName()));
+                .andExpect(jsonPath("$[0].name").value("Дрель"))
+                .andExpect(jsonPath("$[0].available").value(true));
     }
 
     @Test
-    void createItem() throws Exception {
-        when(itemService.addNewItem(userId, itemDto)).thenReturn(itemDto);
+    void createItemTest() throws Exception {
+        Mockito.when(itemService.addNewItem(eq(userId), any(ItemDto.class)))
+                .thenReturn(itemDto);
 
-        mvc.perform(post("/items")
+        mockMvc.perform(post("/items")
                         .header("X-Sharer-User-Id", userId)
-                        .content(mapper.writeValueAsString(itemDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(itemDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(itemDto.getId()))
-                .andExpect(jsonPath("$.name").value(itemDto.getName()));
+                .andExpect(jsonPath("$.id").value(itemId))
+                .andExpect(jsonPath("$.description").value("Простая дрель"));
     }
 
     @Test
-    void updateItem() throws Exception {
-        ItemDto updatedDto = new ItemDto();
-        updatedDto.setId(itemDto.getId());
-        updatedDto.setName("Обновленный молоток");
-        updatedDto.setDescription(itemDto.getDescription());
-        updatedDto.setAvailable(itemDto.getAvailable());
-        updatedDto.setRequestId(itemDto.getRequestId());
+    void updateItemTest() throws Exception {
+        Mockito.when(itemService.updateItem(eq(userId), eq(itemId), any(ItemDto.class)))
+                .thenReturn(updatedItemDto);
 
-        when(itemService.updateItem(userId, itemId, itemDto)).thenReturn(updatedDto);
-
-        mvc.perform(patch("/items/{itemId}", itemId)
+        mockMvc.perform(patch("/items/{itemId}", itemId)
                         .header("X-Sharer-User-Id", userId)
-                        .content(mapper.writeValueAsString(itemDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedItemDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Обновленный молоток"));
+                .andExpect(jsonPath("$.id").value(itemId))
+                .andExpect(jsonPath("$.name").value("Отбойный молоток"))
+                .andExpect(jsonPath("$.description").value("Мощный инструмент для демонтажа"))
+                .andExpect(jsonPath("$.available").value(false));
     }
 
     @Test
-    void deleteItem() throws Exception {
-        doNothing().when(itemService).deleteItem(userId, itemId);
-
-        mvc.perform(delete("/items/{itemId}", itemId)
+    void deleteItemTest() throws Exception {
+        mockMvc.perform(delete("/items/{itemId}", itemId)
                         .header("X-Sharer-User-Id", userId))
                 .andExpect(status().isOk());
+
+        Mockito.verify(itemService).deleteItem(userId, itemId);
     }
 
     @Test
-    void addComment() throws Exception {
-        when(itemService.addComment(userId, itemId, commentDto)).thenReturn(commentDto);
+    void addCommentTest() throws Exception {
+        Mockito.when(itemService.addComment(eq(userId), eq(itemId), any(CommentDto.class)))
+                .thenReturn(commentDto);
 
-        mvc.perform(post("/items/{itemId}/comment", itemId)
+        mockMvc.perform(post("/items/{itemId}/comment", itemId)
                         .header("X-Sharer-User-Id", userId)
-                        .content(mapper.writeValueAsString(commentDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(commentDto.getId()))
-                .andExpect(jsonPath("$.text").value(commentDto.getText()))
-                .andExpect(jsonPath("$.authorName").value(commentDto.getAuthorName()));
+                .andExpect(jsonPath("$.text").value("Отличный инструмент!"))
+                .andExpect(jsonPath("$.authorName").value("Иван"));
     }
 }

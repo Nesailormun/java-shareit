@@ -83,7 +83,7 @@ public class BookingServiceTest {
         assertThat(bookingDto).isNotNull();
         assertThat(bookingDto.getItem().getId()).isEqualTo(prep.bookingRequestDto.getItemId());
         assertThat(bookingDto.getBooker().getId()).isEqualTo(prep.booker.getId());
-        assertThat(bookingDto.getStatus()).isEqualTo(BookingStatus.WAITING);
+        assertThat(bookingDto.getStatus()).isEqualTo(BookingStatus.WAITING.toString());
         assertThat(bookingDto.getStart()).isEqualTo(prep.bookingRequestDto.getStart());
         assertThat(bookingDto.getEnd()).isEqualTo(prep.bookingRequestDto.getEnd());
     }
@@ -129,7 +129,7 @@ public class BookingServiceTest {
 
         BookingDto approvedBooking = bookingService.approveBooking(prep.owner.getId(), createdBooking.getId(), true);
 
-        assertThat(approvedBooking.getStatus()).isEqualTo(BookingStatus.APPROVED);
+        assertThat(approvedBooking.getStatus()).isEqualTo(BookingStatus.APPROVED.toString());
         assertThat(approvedBooking.getId()).isEqualTo(createdBooking.getId());
     }
 

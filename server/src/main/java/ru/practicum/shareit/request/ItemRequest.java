@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "requests", schema = "public")
+@Table(name = "requests")
 @AllArgsConstructor
 @NoArgsConstructor
 public class ItemRequest {
