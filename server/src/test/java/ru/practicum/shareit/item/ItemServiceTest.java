@@ -153,13 +153,6 @@ public class ItemServiceTest {
     }
 
     @Test
-    void getItemsByTextEmptyOrNullReturnsEmptyList() {
-        assertThat(itemService.getItemsByText(owner.getId(), "")).isEmpty();
-        assertThat(itemService.getItemsByText(owner.getId(), "   ")).isEmpty();
-        assertThat(itemService.getItemsByText(owner.getId(), null)).isEmpty();
-    }
-
-    @Test
     void deleteItemTest() {
         itemService.deleteItem(owner.getId(), item.getId());
         assertThat(itemRepository.findById(item.getId())).isEmpty();

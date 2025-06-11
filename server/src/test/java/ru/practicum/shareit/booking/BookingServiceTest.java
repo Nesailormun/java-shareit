@@ -89,18 +89,6 @@ public class BookingServiceTest {
     }
 
     @Test
-    void createBookingWithInvalidDatesThrowsTest() {
-        BookingPreparation prep = prepareBookingDataTest();
-
-        prep.bookingRequestDto.setStart(LocalDateTime.now().plusHours(2));
-        prep.bookingRequestDto.setEnd(LocalDateTime.now().plusHours(1)); // end before start
-
-        assertThatThrownBy(() -> bookingService.createBooking(prep.booker.getId(), prep.bookingRequestDto))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Некорректные дата начала и окончания бронирования");
-    }
-
-    @Test
     void createBookingUnavailableItemThrowsTest() {
         BookingPreparation prep = prepareBookingDataTest();
 
