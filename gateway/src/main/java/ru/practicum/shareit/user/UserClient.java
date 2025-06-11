@@ -22,7 +22,7 @@ public class UserClient extends BaseClient {
                 .build());
     }
 
-    public ResponseEntity<Object> createUser (UserDto userDto) {
+    public ResponseEntity<Object> createUser(UserDto userDto) {
         return post("", userDto);
     }
 
