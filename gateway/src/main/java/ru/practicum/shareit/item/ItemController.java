@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.UpdateItemDto;
+
+import java.util.List;
 
 @Slf4j
 @Controller
@@ -46,7 +49,12 @@ public class ItemController {
             @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
             @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
         log.info("GET /items/search userId={}, text='{}', from={}, size={}", userId, text, from, size);
-        return itemClient.getItemsByText(userId, text, from, size);
+        if (text == null || text.isBlank()) {
+            log.warn("Поисковый текст пуст. Возвращаем пустой список.");
+            return new ResponseEntity<>(List.of(), HttpStatus.OK);
+        } else {
+            return itemClient.getItemsByText(userId, text, from, size);
+        }
     }
 
     @PostMapping

@@ -39,9 +39,6 @@ public class BookingServiceImpl implements BookingService {
         User booker = checkUserExisting(userId);
         Item item = checkItemExisting(bookingDto);
 
-        if (bookingDto.getEnd().equals(bookingDto.getStart()) || bookingDto.getEnd().isBefore(bookingDto.getStart())) {
-            throw new IllegalArgumentException("Некорректные дата начала и окончания бронирования.");
-        }
         if (!item.getAvailable()) {
             throw new IllegalArgumentException("Вещь с id =" + item.getId() + " недоступна для бронирования.");
         }

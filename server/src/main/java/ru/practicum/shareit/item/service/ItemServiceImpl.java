@@ -162,10 +162,6 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> getItemsByText(long userId, String text) {
         log.info("Запрос на поиск доступных вещей по тексту = '{}'", text);
-        if (text == null || text.isBlank()) {
-            log.warn("Поисковый текст пуст.");
-            return List.of();
-        }
         return itemRepository.findByText(text).stream()
                 .map(ItemMapper::mapToItemDto)
                 .toList();

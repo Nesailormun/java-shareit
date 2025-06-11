@@ -48,42 +48,23 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     public List<ItemRequestDto> getUserRequests(Long userId) {
         log.info("Получение запросов пользователя с id={}", userId);
 
-        List<ItemRequestDto> requests = requestRepository.findByRequesterIdOrderByCreatedDesc(userId)
-                .stream()
-                .map(ItemRequestMapper::toItemRequestDto)
-                .collect(Collectors.toList());
-
+        checkAndReturnUser(userId);
+        List<ItemRequest> requests = requestRepository.findByRequesterIdOrderByCreatedDesc(userId);
         log.info("Найдено {} запросов для пользователя {}", requests.size(), userId);
-        return requests;
+        return getItemRequestsWithItems(requests);
     }
 
     @Override
     public List<ItemRequestDto> getAllRequests(Long userId, int from, int size) {
         log.info("Получение запросов других пользователей, запрашивает пользователь с id ={}, from={}, size={}", userId, from, size);
 
+        checkAndReturnUser(userId);
         List<ItemRequest> requests = requestRepository
                 .findByRequesterIdNotOrderByCreatedDesc(userId, PageRequest.of(from / size, size));
 
         log.info("Найдено {} чужих запросов", requests.size());
 
-        List<Long> requestIds = requests.stream()
-                .map(ItemRequest::getId)
-                .toList();
-
-        List<Item> items = itemRepository.findAllByRequestIdIn(requestIds);
-
-        Map<Long, List<Item>> itemsByRequestId = items.stream()
-                .collect(Collectors.groupingBy(item -> item.getRequest().getId()));
-
-        return requests.stream()
-                .map(request -> {
-                    List<ItemDto> requestItems = itemsByRequestId.getOrDefault(request.getId(), List.of()).stream()
-                            .map(ItemMapper::mapToItemDto).toList();
-                    ItemRequestDto requestWithItems = ItemRequestMapper.toItemRequestDto(request);
-                    requestWithItems.setItems(requestItems);
-                    return requestWithItems;
-                })
-                .toList();
+        return getItemRequestsWithItems(requests);
     }
 
     @Override
@@ -109,13 +90,33 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                 });
     }
 
-
     private User checkAndReturnUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("Пользователь с id={} не найден", userId);
                     return new NotFoundException("Пользователь не найден");
                 });
+    }
+
+    private List<ItemRequestDto> getItemRequestsWithItems(List<ItemRequest> requests) {
+        List<Long> requestIds = requests.stream()
+                .map(ItemRequest::getId)
+                .toList();
+
+        List<Item> items = itemRepository.findAllByRequestIdIn(requestIds);
+
+        Map<Long, List<Item>> itemsByRequestId = items.stream()
+                .collect(Collectors.groupingBy(item -> item.getRequest().getId()));
+
+        return requests.stream()
+                .map(request -> {
+                    List<ItemDto> requestItems = itemsByRequestId.getOrDefault(request.getId(), List.of()).stream()
+                            .map(ItemMapper::mapToItemDto).toList();
+                    ItemRequestDto requestWithItems = ItemRequestMapper.toItemRequestDto(request);
+                    requestWithItems.setItems(requestItems);
+                    return requestWithItems;
+                })
+                .toList();
     }
 
 }
